@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blue Library System Corp | Customer Pro v9.5</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --blue-corp: #003366; --blue-light: #0052cc;
+            --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
+            --bg: #f0f4f8; --white: #ffffff;
+        }
+
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #1e293b; }
+        .container { max-width: 1600px; margin: 0 auto; }
+
+        header {
+            background: linear-gradient(135deg, var(--blue-corp), var(--blue-light));
+            color: white; padding: 25px 40px; border-radius: 24px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin-bottom: 30px;
+        }
+
+        .main-layout { display: grid; grid-template-columns: 400px 1fr; gap: 30px; }
+        .card { background: var(--white); padding: 30px; border-radius: 24px; box-shadow: 0 10px 15px rgba(0,0,0,0.03); margin-bottom: 30px; }
+
+        /* Formulario */
+        .form-group { margin-bottom: 15px; }
+        label { font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 5px; }
+        input, select {
+            width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px;
+            background: #f8fafc; font-family: inherit; font-size: 0.9rem; box-sizing: border-box;
+        }
+
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .btn-save { background: var(--blue-corp); color: white; }
+        .btn-save:hover { background: var(--blue-light); transform: translateY(-2px); }
+
+        /* Tablas */
+        .table-container { overflow-x: auto; border-radius: 15px; max-height: 350px; overflow-y: auto; border: 1px solid #edf2f7; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th { text-align: left; padding: 15px; font-size: 0.7rem; color: #64748b; background: #f8fafc; border-bottom: 2px solid #edf2f7; position: sticky; top: 0; z-index: 10; }
+        td { padding: 15px; border-bottom: 1px solid #edf2f7; font-size: 0.85rem; }
+
+        .badge { padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 0.65rem; }
+        .bg-ok { background: #dcfce7; color: #15803d; }
+        .bg-out { background: #fee2e2; color: #b91c1c; }
+        .price { font-weight: 800; color: var(--success); }
+        
+        .section-title { border-left: 5px solid var(--blue-light); padding-left: 15px; margin-bottom: 20px; color: var(--blue-corp); }
+        .client-info { color: #64748b; font-size: 0.75rem; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1 style="margin:0; font-size: 1.8rem;">Blue Library System Corp</h1>
+            <p style="margin:0; opacity: 0.8;">Gestión Avanzada de Clientes & CRM v9.5</p>
+        </div>
+        <div style="display:flex; gap:10px">
+            <button onclick="exportarData('ventas')" class="btn" style="width:auto; background:rgba(255,255,255,0.2); color:white; margin:0">Ventas (JSON)</button>
+            <button onclick="exportarData('clientes')" class="btn" style="width:auto; background:rgba(255,255,255,0.2); color:white; margin:0">Clientes (JSON)</button>
+        </div>
+    </header>
+
+    <div class="main-layout">
+        <aside>
+            <div class="card">
+                <h3 class="section-title">🛒 Nueva Venta / Stock</h3>
+                <form id="libForm">
+                    <div class="form-group">
+                        <label>Seleccionar Cliente</label>
+                        <input type="text" id="cliente" list="listaClientes" placeholder="Nombre del cliente registrado">
+                        <datalist id="listaClientes"></datalist>
+                    </div>
+                    <div class="form-group">
+                        <label>Libro</label>
+                        <input type="text" id="titulo" list="listaLibros" required placeholder="Buscar libro...">
+                        <datalist id="listaLibros"></datalist>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
+                        <div class="form-group">
+                            <label>Precio ($)</label>
+                            <input type="number" id="precio" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Stock</label>
+                            <input type="number" id="stock" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-save">Procesar Operación</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3 class="section-title">➕ Registrar Nuevo Cliente</h3>
+                <form id="clientForm">
+                    <div class="form-group">
+                        <label>Nombre Completo</label>
+                        <input type="text" id="newClientName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Correo Electrónico</label>
+                        <input type="email" id="newClientEmail" required>
+                    </div>
+                    <button type="submit" class="btn" style="background:var(--success); color:white">Registrar Cliente</button>
+                </form>
+            </div>
+        </aside>
+
+        <main>
+            <div class="card">
+                <h3 class="section-title">👥 Base de Datos de Clientes Registrados</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Contacto</th>
+                                <th>Fecha Registro</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaMasterClientes"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="section-title">📚 Inventario</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Libro</th>
+                                <th>Estado</th>
+                                <th>Precio</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaInventario"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="section-title">🧾 Historial de Ventas</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Cliente</th>
+                                <th>Libro</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaVentas"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+    // --- DATOS INICIALES ---
+    const dbLibros = [
+        { titulo: "Cien años de soledad", precio: 25.00, stock: 10, categoria: "Ficción" },
+        { titulo: "Clean Code", precio: 45.00, stock: 5, categoria: "Técnico" },
+        { titulo: "Sapiens", precio: 22.00, stock: 15, categoria: "Historia" },
+        { titulo: "Harry Potter 1", precio: 18.00, stock: 8, categoria: "Ficción" }
+    ];
+
+    const dbClientesMaster = [
+        { nombre: "Juan Pérez", email: "juan.perez@email.com", fecha: "10/05/2024" },
+        { nombre: "María García", email: "m.garcia@email.com", fecha: "12/05/2024" },
+        { nombre: "Carlos Rodríguez", email: "carlos.rod@email.com", fecha: "15/05/2024" },
+        { nombre: "Ana Martínez", email: "ana.mtz@email.com", fecha: "18/05/2024" },
+        { nombre: "Luis Sánchez", email: "luis.san@email.com", fecha: "20/05/2024" },
+        { nombre: "Elena Gómez", email: "elena.g@email.com", fecha: "22/05/2024" },
+        { nombre: "Roberto Díaz", email: "rober.d@email.com", fecha: "25/05/2024" },
+        { nombre: "Sofía López", email: "sofia.l@email.com", fecha: "28/05/2024" },
+        { nombre: "Miguel Torres", email: "m.torres@email.com", fecha: "01/06/2024" },
+        { nombre: "Lucía Fernández", email: "lucia.f@email.com", fecha: "05/06/2024" },
+        { nombre: "Pedro Ruiz", email: "p.ruiz@email.com", fecha: "08/06/2024" },
+        { nombre: "Isabel Castro", email: "isabel.c@email.com", fecha: "10/06/2024" },
+        { nombre: "Fernando Vega", email: "f.vega@email.com", fecha: "12/06/2024" },
+        { nombre: "Gabriela Ortiz", email: "gabi.o@email.com", fecha: "15/06/2024" },
+        { nombre: "Jorge Herrera", email: "jorge.h@email.com", fecha: "18/06/2024" },
+        { nombre: "Victoria Nuñez", email: "vicky.n@email.com", fecha: "20/06/2024" },
+        { nombre: "Ricardo Mora", email: "richi.m@email.com", fecha: "22/06/2024" },
+        { nombre: "Paola Silva", email: "pao.silva@email.com", fecha: "25/06/2024" },
+        { nombre: "Andrés Ramos", email: "a.ramos@email.com", fecha: "28/06/2024" },
+        { nombre: "Carmen Luna", email: "c.luna@email.com", fecha: "30/06/2024" }
+    ];
+
+    let inventory = JSON.parse(localStorage.getItem('BLUE_INV_v95')) || dbLibros;
+    let customers = JSON.parse(localStorage.getItem('BLUE_CUST_v95')) || dbClientesMaster;
+    let sales = JSON.parse(localStorage.getItem('BLUE_SALES_v95')) || [];
+
+    document.addEventListener('DOMContentLoaded', () => { renderAll(); });
+
+    // --- LÓGICA DE VENTAS ---
+    document.getElementById('libForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const t = document.getElementById('titulo').value;
+        const c = document.getElementById('cliente').value;
+        const p = parseFloat(document.getElementById('precio').value);
+        const s = parseInt(document.getElementById('stock').value);
+
+        const bookIdx = inventory.findIndex(i => i.titulo.toLowerCase() === t.toLowerCase());
+
+        if (c !== "") {
+            const clienteExiste = customers.some(cust => cust.nombre.toLowerCase() === c.toLowerCase());
+            if (!clienteExiste) {
+                alert("Error: El cliente no está registrado. Por favor, regístrelo primero.");
+                return;
+            }
+
+            if (bookIdx !== -1 && inventory[bookIdx].stock > 0) {
+                inventory[bookIdx].stock -= 1;
+                sales.unshift({ fecha: new Date().toLocaleString(), cliente: c, libro: t, total: p });
+                alert(`Venta exitosa a ${c}`);
+            } else {
+                alert("No hay stock suficiente.");
+                return;
+            }
+        } else {
+            if (bookIdx !== -1) {
+                inventory[bookIdx].stock = s;
+                inventory[bookIdx].precio = p;
+            } else {
+                inventory.push({ titulo: t, precio: p, stock: s });
+            }
+        }
+        guardar(); e.target.reset();
+    });
+
+    // --- REGISTRO DE CLIENTES ---
+    document.getElementById('clientForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('newClientName').value;
+        const email = document.getElementById('newClientEmail').value;
+        
+        customers.unshift({ nombre: name, email: email, fecha: new Date().toLocaleDateString() });
+        guardar(); e.target.reset();
+        alert("Cliente registrado correctamente.");
+    });
+
+    function guardar() {
+        localStorage.setItem('BLUE_INV_v95', JSON.stringify(inventory));
+        localStorage.setItem('BLUE_CUST_v95', JSON.stringify(customers));
+        localStorage.setItem('BLUE_SALES_v95', JSON.stringify(sales));
+        renderAll();
+    }
+
+    function renderAll() {
+        // Clientes
+        document.getElementById('tablaMasterClientes').innerHTML = customers.map(c => `
+            <tr>
+                <td><strong>${c.nombre}</strong></td>
+                <td class="client-info">${c.email}</td>
+                <td>${c.fecha}</td>
+            </tr>
+        `).join('');
+
+        // Inventario
+        document.getElementById('tablaInventario').innerHTML = inventory.map(item => `
+            <tr>
+                <td><strong>${item.titulo}</strong></td>
+                <td><span class="badge ${item.stock > 0 ? 'bg-ok' : 'bg-out'}">${item.stock > 0 ? 'En Stock: '+item.stock : 'AGOTADO'}</span></td>
+                <td class="price">$${item.precio.toFixed(2)}</td>
+                <td><button onclick="cargarLibro('${item.titulo}')" style="color:var(--blue-light); border:none; background:none; cursor:pointer; font-weight:800">Cargar</button></td>
+            </tr>
+        `).join('');
+
+        // Ventas
+        document.getElementById('tablaVentas').innerHTML = sales.map(s => `
+            <tr>
+                <td><small>${s.fecha}</small></td>
+                <td><strong>${s.cliente}</strong></td>
+                <td>${s.libro}</td>
+                <td class="price">$${s.total.toFixed(2)}</td>
+            </tr>
+        `).join('');
+
+        // Datalists
+        document.getElementById('listaClientes').innerHTML = customers.map(c => `<option value="${c.nombre}">`).join('');
+        document.getElementById('listaLibros').innerHTML = inventory.map(i => `<option value="${i.titulo}">`).join('');
+    }
+
+    function cargarLibro(titulo) {
+        const item = inventory.find(i => i.titulo === titulo);
+        document.getElementById('titulo').value = item.titulo;
+        document.getElementById('precio').value = item.precio;
+        document.getElementById('stock').value = item.stock;
+    }
+
+    function exportarData(tipo) {
+        const data = tipo === 'ventas' ? sales : customers;
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+        const link = document.createElement('a');
+        link.setAttribute("href", dataStr);
+        link.setAttribute("download", `reporte_${tipo}.json`);
+        link.click();
+    }
+</script>
+
+</body>
+</html>
